@@ -1,27 +1,31 @@
-import { Form, Link, useNavigate } from "@remix-run/react";
-import { useState } from "react";
-import type { FormEvent } from "react";
+import {  json, Link, useFetcher,  useNavigation } from "@remix-run/react";
+import { useEffect } from "react";
+import nprogress from 'nprogress'
+import { ActionFunction, ActionFunctionArgs } from "@remix-run/node";
 
+export const action:ActionFunction = async({request}: ActionFunctionArgs)=>{
+  try {
+    const formdata = await request.formData()
+    console.log("formdata", formdata)
+    return json({message: "hello"})
+  } catch (error) {
+    return json({message: "Interner server issue"},{status: 500})
+  }
+
+}
 export default function RegisterPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const fetcher = useFetcher()
+  const navigate  = useNavigation()
+  const isSubmitting  = fetcher.state === "submitting"
 
-  const navigate = useNavigate();
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
-
-    // You can send data to backend here using fetch or Remix actions
-    // For now, simulate redirect
-    navigate("/chat");
-  };
-
+  useEffect(()=>{
+if(navigate.state === "loading"){
+  nprogress.start()
+}
+else{
+  nprogress.done()
+}
+  }, [navigate.state])
   return (
     <div className="min-h-screen bg-white flex items-center justify-center py-8">
       <div className="max-w-md w-full mx-4">
@@ -30,12 +34,12 @@ export default function RegisterPage() {
             ChatApp
           </Link>
           <h2 className="text-xl font-semibold text-gray-800 mt-4">
-            Create Account
+           Create Account
           </h2>
           <p className="text-gray-600 mt-2">Join our community today</p>
         </div>
 
-        <Form onSubmit={handleSubmit} method="post" className="space-y-6">
+        < fetcher.Form  method="post" className="space-y-6" action="/register">
           <div>
             <label
               htmlFor="name"
@@ -46,8 +50,7 @@ export default function RegisterPage() {
             <input
               type="text"
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              name="name"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Enter your full name"
               required
@@ -64,8 +67,7 @@ export default function RegisterPage() {
             <input
               type="email"
               id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Enter your email"
               required
@@ -82,8 +84,7 @@ export default function RegisterPage() {
             <input
               type="password"
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Create a password"
               required
@@ -100,8 +101,7 @@ export default function RegisterPage() {
             <input
               type="password"
               id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              name="confirmpassword"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Confirm your password"
               required
@@ -110,11 +110,12 @@ export default function RegisterPage() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
-            Create Account
+             {isSubmitting ? "Creating...":"Create Account"}
           </button>
-        </Form>
+        </fetcher.Form>
 
         <div className="mt-8 text-center">
           <span className="text-gray-600">Already have an account? </span>
