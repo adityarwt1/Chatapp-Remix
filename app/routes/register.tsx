@@ -1,13 +1,18 @@
-import { json, Link, useFetcher, useNavigation } from "@remix-run/react";
+import { json, Link, redirect, useFetcher, useNavigation } from "@remix-run/react";
 import { useEffect } from "react";
 import nprogress from "nprogress";
 import { ActionFunction, ActionFunctionArgs } from "@remix-run/node";
-
+import { connect } from "lib/mongodb";
+import User from "model/user";
+import bcrypt from "bcryptjs";
 interface Formdata {
   name: string;
   email: string;
   password: string;
   confirmpassword: string;
+}
+interface FetcherType{
+  error: string
 }
 export const action: ActionFunction = async ({
   request,
@@ -21,18 +26,35 @@ export const action: ActionFunction = async ({
     for (const [key, value] of formdata.entries()) {
       data[key as keyof Formdata] = value.toString();
     }
-    for (const [key, value] of formdata.entries()) {
-      data[key as keyof FormData] = value.toString();
-    }
-    console.log("formdata", data);
 
-    return json({ message: "hello" });
+    console.log("formdata", data);
+    if(!data){
+      return json({error: "Please fill the field"}, {status: 400})
+    }
+    if(data.password !== data.confirmpassword){
+      return json({error: "Password not matching"}, {status: 400})
+    }
+    const hashedPassword = await bcrypt.hash(data.password as string, 20)
+    await connect()
+    const user = new User({
+      fullname: data.name,
+      email: data.email,
+      password: hashedPassword,
+    });
+    await user.save()
+    if(user){
+      return redirect("/chat")
+    }
+    else{
+      return json({error: "Failed to create user"},{status: 500})
+    }
   } catch (error) {
-    return json({ message: "Interner server issue" }, { status: 500 });
+    console.log((error as Error).message)
+    return json({ message: "Interner server issue", error: (error as Error).message }, { status: 500 });
   }
 };
 export default function RegisterPage() {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<FetcherType>();
   const navigate = useNavigation();
   const isSubmitting = fetcher.state === "submitting";
 
@@ -55,7 +77,9 @@ export default function RegisterPage() {
           </h2>
           <p className="text-gray-600 mt-2">Join our community today</p>
         </div>
-
+      {fetcher.data?.error && <div className="p-4 bg-red-400 rounded-md my-2 text-white">
+        {fetcher.data?.error}
+        </div>}
         <fetcher.Form method="post" className="space-y-6" action="/register">
           <div>
             <label
