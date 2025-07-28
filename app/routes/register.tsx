@@ -2,9 +2,10 @@ import { json, Link, redirect, useFetcher, useNavigation } from "@remix-run/reac
 import { useEffect } from "react";
 import nprogress from "nprogress";
 import { ActionFunction, ActionFunctionArgs } from "@remix-run/node";
-import { connect } from "lib/mongodb";
+import { connect, disconnect } from "lib/mongodb";
 import User from "model/user";
 import bcrypt from "bcryptjs";
+import {  session } from "lib/session.server";
 interface Formdata {
   name: string;
   email: string;
@@ -34,18 +35,30 @@ export const action: ActionFunction = async ({
     if(data.password !== data.confirmpassword){
       return json({error: "Password not matching"}, {status: 400})
     }
-    const hashedPassword = await bcrypt.hash(data.password as string, 20)
     await connect()
+    const exist = await User.findOne({email: data.email})
+    if(exist){
+      return json({error: "User aleready exist"},{status: 409})
+    }
+    const hashedPassword = await bcrypt.hash(data.password as string, 10)
     const user = new User({
       fullname: data.name,
       email: data.email,
       password: hashedPassword,
     });
     await user.save()
+    await disconnect()
     if(user){
-      return redirect("/chat")
+      const cookie  = await session.getSession()
+      cookie.set("user", user)
+      return redirect("/chat",{
+        headers: {
+          "Set-Cookie": await session.commitSession(cookie)
+        }
+      })
     }
     else{
+
       return json({error: "Failed to create user"},{status: 500})
     }
   } catch (error) {
