@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import {  session } from "lib/session.server";
 interface Formdata {
   name: string;
+  username: string;
   email: string;
   password: string;
   confirmpassword: string;
@@ -36,7 +37,7 @@ export const action: ActionFunction = async ({
       return json({error: "Password not matching"}, {status: 400})
     }
     await connect()
-    const exist = await User.findOne({email: data.email})
+    const exist = await User.findOne({ username: data?.username });
     if(exist){
       return json({error: "User aleready exist"},{status: 409})
     }
@@ -45,7 +46,9 @@ export const action: ActionFunction = async ({
       fullname: data.name,
       email: data.email,
       password: hashedPassword,
+      username: data?.username,
     });
+
     await user.save()
     await disconnect()
     if(user){
@@ -94,6 +97,7 @@ export default function RegisterPage() {
         {fetcher.data?.error}
         </div>}
         <fetcher.Form method="post" className="space-y-6" action="/register">
+          
           <div>
             <label
               htmlFor="name"
@@ -107,6 +111,22 @@ export default function RegisterPage() {
               name="name"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Enter your full name"
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="Enter username"
               required
             />
           </div>
