@@ -1,19 +1,20 @@
 "use client";
 
-import type React from "react";
-import { useState } from "react";
-import { Link, useNavigate } from "@remix-run/react";
+import { Link,  useFetcher,  useNavigation } from "@remix-run/react";
+import nProgress from "nprogress";
+import { useEffect } from "react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulate login
-    navigate("/chat");
-  };
+  const navigate = useNavigation();
+const fetcher = useFetcher()
+  useEffect(()=>{
+    if(navigate.state === "loading"){
+      nProgress.start()
+    }
+    else{
+      nProgress.done()
+    }
+  },[navigate.state])
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
@@ -28,19 +29,18 @@ export default function LoginPage() {
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <fetcher.Form method="post" className="space-y-6">
           <div>
             <label
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Email Address
+              Username
             </label>
             <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              id="username"
+              name="username"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Enter your email"
               required
@@ -57,8 +57,6 @@ export default function LoginPage() {
             <input
               type="password"
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Enter your password"
               required
@@ -71,7 +69,7 @@ export default function LoginPage() {
           >
             Sign In
           </button>
-        </form>
+        </fetcher.Form>
 
         <div className="mt-6 text-center">
           <Link
