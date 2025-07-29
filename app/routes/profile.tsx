@@ -9,7 +9,7 @@ import User from "model/user";
 interface UserType {
   fullname: string;
   email: string;
-  status: string; 
+  status: string;
 }
 interface TypeLoader {
   user: UserType;
@@ -115,6 +115,7 @@ export default function ProfilePage() {
               type="email"
               id="email"
               name="email"
+              defaultValue={loaderdata.user.email || "example@gmail.com"}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
@@ -129,6 +130,7 @@ export default function ProfilePage() {
             <select
               id="status"
               name="status"
+              defaultValue={loaderdata.user.status ?? loaderdata.user.status}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             >
               <option value="Available">Available</option>
