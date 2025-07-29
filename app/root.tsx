@@ -1,13 +1,16 @@
 import {
+  json,
   Links,
   Meta,
   Outlet,
+  redirect,
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunction } from "@remix-run/node";
 
 import "./tailwind.css";
+import { getSession } from "lib/session.server";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -22,6 +25,17 @@ export const links: LinksFunction = () => [
   },
 ];
 
+
+export const loader: LoaderFunction   = async ({request})=>{
+  const sessinio = await getSession(request)
+  const userdata = sessinio.get("user")
+  if(userdata.username){
+
+     redirect("/chat")
+     return json({message: "User data found"})
+  }
+  
+}
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
