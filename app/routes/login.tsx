@@ -1,12 +1,60 @@
 "use client";
 
+import { ActionFunction, ActionFunctionArgs, json, redirect } from "@remix-run/node";
 import { Link,  useFetcher,  useNavigation } from "@remix-run/react";
+import bcrypt from "bcryptjs";
+import { connect } from "lib/mongodb";
+import User from "model/user";
 import nProgress from "nprogress";
 import { useEffect } from "react";
 
+interface Formdata {
+  username: string
+  password: string
+}
+
+interface FetchType{
+  error: string
+}
+export const action : ActionFunction = async({request}: ActionFunctionArgs)=>{
+
+  try {
+  const formdata = await request.formData()  
+
+  const data : Partial<Formdata>= {}
+
+  for(const [key, value] of formdata.entries()){
+    data[key as keyof Formdata] = value.toString()
+  }
+
+  if(!data){
+    return json({error: "Invalid Request"},{status: 400})
+  }
+
+  await connect()
+  const user = await User.findOne({username: data.username})
+
+  if(!user){
+    return json({error: "User not Found"},{status: 404})
+  }
+  
+  const isPasswordTrue = await bcrypt.compare(data.password as string, user.password)
+  if(isPasswordTrue){
+    redirect("/chat")
+    return json({message: "Login Successfully"},{status: 200})
+  }
+  else{
+    return json({error: "Wrong Password"},{status: 400})
+  }
+  } catch (error) {
+    console.log((error as Error).message)
+    return json({error: "Internal Server issue"},{status: 500})
+  }
+}
 export default function LoginPage() {
   const navigate = useNavigation();
-const fetcher = useFetcher()
+const fetcher = useFetcher<FetchType>()
+const isloading = fetcher.state === "submitting"
   useEffect(()=>{
     if(navigate.state === "loading"){
       nProgress.start()
@@ -28,6 +76,11 @@ const fetcher = useFetcher()
           </h2>
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
+        {fetcher.data?.error && (
+          <div className="p-4 bg-red-400 rounded-md my-2 text-white">
+            {fetcher.data?.error}
+          </div>
+        )}
 
         <fetcher.Form method="post" className="space-y-6">
           <div>
@@ -67,7 +120,7 @@ const fetcher = useFetcher()
             type="submit"
             className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
-            Sign In
+            {isloading ? "Signin..." : "Sign In"}
           </button>
         </fetcher.Form>
 

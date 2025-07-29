@@ -35,7 +35,7 @@ export const loader: LoaderFunction   = async ({request})=>{
      return json({message: "User data found"})
   }
   else{
-    return json({message: "base"})
+    return json({message: "nothind to send for now"})
   }
 }
 export function Layout({ children }: { children: React.ReactNode }) {
