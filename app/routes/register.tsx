@@ -29,7 +29,6 @@ export const action: ActionFunction = async ({
       data[key as keyof Formdata] = value.toString();
     }
 
-    console.log("formdata", data);
     if(!data){
       return json({error: "Please fill the field"}, {status: 400})
     }
