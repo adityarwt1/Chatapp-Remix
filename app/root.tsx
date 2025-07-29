@@ -34,7 +34,9 @@ export const loader: LoaderFunction   = async ({request})=>{
      redirect("/chat")
      return json({message: "User data found"})
   }
-  
+  else{
+    return json({message: "base"})
+  }
 }
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
