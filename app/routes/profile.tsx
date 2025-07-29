@@ -1,30 +1,47 @@
 "use client";
 
-import type React from "react";
-import { useState } from "react";
-import { Link } from "@remix-run/react";
+import { json, LoaderFunction, redirect } from "@remix-run/node";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { connect, disconnect } from "lib/mongodb";
+import { getSession } from "lib/session.server";
+import User from "model/user";
 
+interface UserType {
+  fullname: string;
+  email: string;
+  status: string; 
+}
+interface TypeLoader {
+  user: UserType;
+}
+export const loader: LoaderFunction = async ({ request }) => {
+  try {
+    const session = await getSession(request);
+    const userdda = session.get("user");
+    if (!userdda.username) {
+      return redirect("/login");
+    }
+    await connect();
+    const user = await User.findOne({ username: userdda.username });
+
+    return json({ user });
+  } catch (error) {
+    console.log((error as Error).message);
+    return json({ message: "Internal server issue" });
+  }
+};
 export default function ProfilePage() {
-  const [name, setName] = useState("John Doe");
-  const [email, setEmail] = useState("john.doe@example.com");
-  const [status, setStatus] = useState("Available");
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle profile update
-    alert("Profile updated successfully!");
-  };
-
+  const loaderdata = useLoaderData<TypeLoader>();
+  console.log("this is the loader data", loaderdata);
+  const fetcher = useFetcher();
+  const isLoading = fetcher.state === "submitting";
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center">
-            <Link
-              to="/chat"
-              className="text-blue-600 hover:text-blue-700 mr-4"
-            >
+            <Link to="/chat" className="text-blue-600 hover:text-blue-700 mr-4">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -70,7 +87,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Profile Form */}
-        <form onSubmit={handleSave} className="space-y-6">
+        <fetcher.Form className="space-y-6">
           <div>
             <label
               htmlFor="name"
@@ -81,8 +98,8 @@ export default function ProfilePage() {
             <input
               type="text"
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              name="name"
+              defaultValue={loaderdata.user.fullname}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
@@ -97,8 +114,7 @@ export default function ProfilePage() {
             <input
               type="email"
               id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
@@ -112,8 +128,7 @@ export default function ProfilePage() {
             </label>
             <select
               id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              name="status"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             >
               <option value="Available">Available</option>
@@ -127,9 +142,9 @@ export default function ProfilePage() {
             type="submit"
             className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
-            Save Changes
+            {isLoading ? "Saving..." : "Save Changes"}
           </button>
-        </form>
+        </fetcher.Form>
 
         {/* Additional Options */}
         <div className="mt-8 space-y-4">
