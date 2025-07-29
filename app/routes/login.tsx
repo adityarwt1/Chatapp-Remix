@@ -1,68 +1,84 @@
 "use client";
 
-import { ActionFunction, ActionFunctionArgs, json, redirect } from "@remix-run/node";
-import { Link,  useFetcher,  useNavigation } from "@remix-run/react";
+import {
+  ActionFunction,
+  ActionFunctionArgs,
+  json,
+  redirect,
+} from "@remix-run/node";
+import { Link, useFetcher, useNavigation } from "@remix-run/react";
 import bcrypt from "bcryptjs";
-import { connect } from "lib/mongodb";
+import { connect, disconnect } from "lib/mongodb";
+import { session } from "lib/session.server";
 import User from "model/user";
 import nProgress from "nprogress";
 import { useEffect } from "react";
 
 interface Formdata {
-  username: string
-  password: string
+  username: string;
+  password: string;
 }
 
-interface FetchType{
-  error: string
+interface FetchType {
+  error: string;
 }
-export const action : ActionFunction = async({request}: ActionFunctionArgs)=>{
-
+export const action: ActionFunction = async ({
+  request,
+}: ActionFunctionArgs) => {
   try {
-  const formdata = await request.formData()  
+    const formdata = await request.formData();
+    console.log(formdata);
 
-  const data : Partial<Formdata>= {}
+    const data: Partial<Formdata> = {};
 
-  for(const [key, value] of formdata.entries()){
-    data[key as keyof Formdata] = value.toString()
-  }
+    for (const [key, value] of formdata.entries()) {
+      data[key as keyof Formdata] = value.toString();
+    }
 
-  if(!data){
-    return json({error: "Invalid Request"},{status: 400})
-  }
+    if (!data) {
+      return json({ error: "Invalid Request" }, { status: 400 });
+    }
 
-  await connect()
-  const user = await User.findOne({username: data.username})
+    await connect();
+    const user = await User.findOne({ username: data.username });
+    await disconnect();
 
-  if(!user){
-    return json({error: "User not Found"},{status: 404})
-  }
-  
-  const isPasswordTrue = await bcrypt.compare(data.password as string, user.password)
-  if(isPasswordTrue){
-    redirect("/chat")
-    return json({message: "Login Successfully"},{status: 200})
-  }
-  else{
-    return json({error: "Wrong Password"},{status: 400})
-  }
+    if (!user) {
+      return json({ error: "User not Found" }, { status: 404 });
+    }
+
+    const isPasswordTrue = await bcrypt.compare(
+      data.password as string,
+      user.password
+    );
+    if (isPasswordTrue) {
+      const cookie = await session.getSession();
+      cookie.set("user", user);
+      return redirect("/chat", {
+        headers: {
+          "Set-Cookie": await session.commitSession(cookie),
+        },
+      });
+      // return json({ message: "Login Successfully" }, { status: 200 });
+    } else {
+      return json({ error: "Wrong Password" }, { status: 400 });
+    }
   } catch (error) {
-    console.log((error as Error).message)
-    return json({error: "Internal Server issue"},{status: 500})
+    console.log((error as Error).message);
+    return json({ error: "Internal Server issue" }, { status: 500 });
   }
-}
+};
 export default function LoginPage() {
   const navigate = useNavigation();
-const fetcher = useFetcher<FetchType>()
-const isloading = fetcher.state === "submitting"
-  useEffect(()=>{
-    if(navigate.state === "loading"){
-      nProgress.start()
+  const fetcher = useFetcher<FetchType>();
+  const isloading = fetcher.state === "submitting";
+  useEffect(() => {
+    if (navigate.state === "loading") {
+      nProgress.start();
+    } else {
+      nProgress.done();
     }
-    else{
-      nProgress.done()
-    }
-  },[navigate.state])
+  }, [navigate.state]);
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
@@ -110,6 +126,7 @@ const isloading = fetcher.state === "submitting"
             <input
               type="password"
               id="password"
+              name="password"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Enter your password"
               required
