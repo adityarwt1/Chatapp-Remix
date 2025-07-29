@@ -1,18 +1,31 @@
 "use client";
 
-import { json, LoaderFunction, redirect } from "@remix-run/node";
+import {
+  ActionFunction,
+  json,
+  LoaderFunction,
+  redirect,
+} from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { connect, disconnect } from "lib/mongodb";
 import { getSession } from "lib/session.server";
 import User from "model/user";
+import React, { useState } from "react";
 
 interface UserType {
   fullname: string;
   email: string;
   status: string;
+  image: string;
 }
 interface TypeLoader {
   user: UserType;
+}
+
+interface FetcherType {
+  user: {
+    image: string;
+  };
 }
 export const loader: LoaderFunction = async ({ request }) => {
   try {
@@ -30,11 +43,71 @@ export const loader: LoaderFunction = async ({ request }) => {
     return json({ message: "Internal server issue" });
   }
 };
+
+export const action: ActionFunction = async ({ request }) => {
+  try {
+    const session = await getSession(request);
+    const userdata = session.get("user");
+    const formadata = await request.formData();
+
+    if (formadata.has("image")) {
+      const image = formadata.get("image");
+      await connect();
+      const user = await User.findOneAndUpdate(
+        {
+          username: userdata?.username,
+        },
+        {
+          image,
+        },
+        {
+          new: true,
+        }
+      );
+      return json({ user }, { status: 200 });
+    }
+  } catch (error) {
+    console.log((error as Error).message);
+    return json({ error: "Internal server issue" }, { status: 500 });
+  }
+};
+//// handlking the saves
 export default function ProfilePage() {
   const loaderdata = useLoaderData<TypeLoader>();
   console.log("this is the loader data", loaderdata);
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<FetcherType>();
   const isLoading = fetcher.state === "submitting";
+
+  ///base64 image
+
+  const base64Format = async (file: any) => {
+    try {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
+    } catch (error) {}
+  };
+  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0];
+
+      const imageUrl = await base64Format(file);
+
+      const formdata = new FormData();
+
+      formdata.append("image", imageUrl as string);
+
+      fetcher.submit(formdata, {
+        method: "post",
+      });
+    } catch (error) {
+      console.log((error as Error).message);
+    }
+  };
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -42,19 +115,23 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center">
             <Link to="/chat" className="text-blue-600 hover:text-blue-700 mr-4">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
+              {loaderdata.user.image ? (
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              ) : (
+                <img src={fetcher.data?.user.image} alt="" />
+              )}
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">
               Profile Settings
@@ -81,13 +158,24 @@ export default function ProfilePage() {
               />
             </svg>
           </div>
-          <button className="text-blue-600 hover:underline font-medium">
+          <input
+            type="file"
+            id="image"
+            name="image"
+            className="hidden"
+            accept="image/*"
+            onChange={handleImage}
+          />
+          <label
+            htmlFor="image"
+            className="text-blue-600 hover:underline font-medium cursor-pointer"
+          >
             Change Profile Picture
-          </button>
+          </label>
         </div>
 
         {/* Profile Form */}
-        <fetcher.Form className="space-y-6">
+        <fetcher.Form className="space-y-6" method="post">
           <div>
             <label
               htmlFor="name"
