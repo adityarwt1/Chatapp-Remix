@@ -129,22 +129,31 @@ export default function ChatPage() {
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-blue-600">ChatApp</h1>
-            <Link to="/profile" className="text-gray-600 hover:text-blue-600">
+
+            <Link to="/profile" className="relative group">
               {loaderData.user?.image ? (
-                <img src={loaderData.user?.image } alt="" />
-              ):  <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                <img
+                  src={loaderData.user.image}
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-blue-500 transition-transform group-hover:scale-105"
                 />
-              </svg>}
+              ) : (
+                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 border border-gray-300">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
+              )}
             </Link>
           </div>
         </div>
