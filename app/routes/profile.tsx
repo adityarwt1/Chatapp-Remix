@@ -120,19 +120,19 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center">
             <Link to="/chat" className="text-blue-600 hover:text-blue-700 mr-4">
-                  <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">
               Profile Settings
@@ -144,24 +144,30 @@ export default function ProfilePage() {
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Profile Picture */}
         <div className="text-center mb-8">
-          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            
-                { loaderdata.user.image ? (
-                  <img src={loaderdata.user.image} className="object-cover" alt="Profile"/>):(
-            <svg
-              className="w-12 h-12 text-blue-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+            {loaderdata.user.image ? (
+              <img
+                src={loaderdata.user.image}
+                className="w-full h-full object-cover rounded-full"
+                alt="Profile"
               />
-            </svg>)}
+            ) : (
+              <svg
+                className="w-12 h-12 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            )}
           </div>
+
           <input
             type="file"
             id="image"
@@ -239,53 +245,6 @@ export default function ProfilePage() {
             {isLoading ? "Saving..." : "Save Changes"}
           </button>
         </fetcher.Form>
-
-        {/* Additional Options */}
-        <div className="mt-8 space-y-4">
-          <button className="w-full text-left px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-gray-900">Notifications</span>
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
-          </button>
-
-          <button className="w-full text-left px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-gray-900">
-                Privacy & Security
-              </span>
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
-          </button>
-
-          <button className="w-full text-left px-4 py-3 border border-red-300 rounded-lg hover:bg-red-50 transition-colors text-red-600">
-            <span className="font-medium">Sign Out</span>
-          </button>
-        </div>
       </div>
     </div>
   );
