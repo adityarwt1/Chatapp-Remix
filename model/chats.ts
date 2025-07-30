@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, model, models, mongo } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 // Define the interface for the Chat document
 export interface Chat extends Document {
@@ -23,7 +23,6 @@ const ChatSchema: Schema<Chat> = new Schema(
     },
     lastmessage: {
       type: String,
-      required: true,
     },
     time: {
       type: Date,
