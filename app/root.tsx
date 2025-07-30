@@ -6,11 +6,14 @@ import {
   redirect,
   Scripts,
   ScrollRestoration,
+  useNavigation,
 } from "@remix-run/react";
 import type { LinksFunction, LoaderFunction } from "@remix-run/node";
 
 import "./tailwind.css";
 import { getSession } from "lib/session.server";
+import { useEffect } from "react";
+import nProgress from "nprogress";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -29,16 +32,27 @@ export const links: LinksFunction = () => [
 export const loader: LoaderFunction   = async ({request})=>{
   const sessinio = await getSession(request)
   const userdata = sessinio.get("user")
-  if(userdata.username){
+  if(userdata?.username){
 
      redirect("/chat")
      return json({message: "User data found"})
   }
   else{
+    redirect('/login')
     return json({message: "nothind to send for now"})
   }
 }
 export function Layout({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigation()
+
+  useEffect(()=>{
+if(navigate.state === "loading"){
+  nProgress.start()
+}
+else{
+nProgress.done()
+}
+  },[navigate.state ])
   return (
     <html lang="en">
       <head>
