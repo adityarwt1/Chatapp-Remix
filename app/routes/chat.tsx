@@ -322,7 +322,7 @@ const users = (fetcher.data?.users ) || [];
                   </svg>
                 </button>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  {chats.find((c) => c.id === selectedChat)?.name}
+                  {loaderData.chats.find((c) => c._id === selectedChat)?.fullname}
                 </h2>
               </div>
             </div>
