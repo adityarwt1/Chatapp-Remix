@@ -255,20 +255,34 @@ const users = (fetcher.data?.users ) || [];
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{chat.fullname}</h3>
-                  <p className="text-sm text-gray-600 truncate">
-                    {chat.lastMessage || "Start Chatting!"}
-                  </p>
+                {/* DP + Name + Message */}
+                <div className="flex items-center gap-3 flex-1">
+                  {/* Profile Image */}
+                  <img
+                    src={chat.image || "/default-avatar.png"} // fallback image
+                    alt={chat.fullname}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+
+                  {/* Name and Message */}
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-gray-900 truncate">
+                      {chat.fullname}
+                    </h3>
+                    <p className="text-sm text-gray-600 truncate">
+                      {chat.lastMessage || "Start Chatting!"}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
+
+                {/* Time + Unread Badge */}
+                <div className="text-right min-w-fit">
                   <p className="text-xs text-gray-500">
-                    {new Date(chat.updatedAt)
-                      .toLocaleTimeString("en-IN", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
+                    {new Date(chat.updatedAt).toLocaleTimeString("en-IN", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
                   </p>
                   {chat.unread > 0 && (
                     <span className="inline-block bg-blue-600 text-white text-xs rounded-full px-2 py-1 mt-1">
