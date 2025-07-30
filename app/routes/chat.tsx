@@ -13,6 +13,8 @@ import { getSession } from "lib/session.server";
 import { connect } from "lib/mongodb";
 import User from "model/user";
 import SearchPopup from "~/components/SearchPopup";
+import ChatModel from "model/chats";
+import mongoose from "mongoose";
 
 export interface UserType {
   _id: string
@@ -56,6 +58,39 @@ export const loader: LoaderFunction = async ({
     await connect();
     const user = await User.findOne({ username: userdata.username });
 
+    //// extracting the chat from the database
+
+    const userA = new mongoose.Types.ObjectId(userdata._id as string)
+    const chat = await ChatModel.find({ 
+      $or:[
+        {participant1: userA},
+        {participant2 : userA}
+      ]
+     })
+    console.log("chats found on database", chat )
+
+    let chats =[]
+    if(chat.length >0){
+      for(let i = 0; i < chat.length; i++){
+        if(String(chat[i].participant1) !== String(userdata._id) ){
+          const user = await User.findOne({ _id: chat[i].participant2 }).select(
+            "fullname username status image"
+          );
+          chats.push(user)
+        }
+        if(String(chat[i].participant2) !== String(userdata._id)){
+          const user = await User.findOne({ _id: chat[i].participant2 }).select(
+            "fullname username status image"
+          );
+          chats.push(user);
+        }
+        else{
+          break;
+        }
+      }
+    }
+    console.log("chat users", chats)
+    
     return json({ message: "Chat Page", user }, { status: 200 });
   } catch (error) {
     console.log((error as Error).message);
