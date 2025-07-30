@@ -1,8 +1,8 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
-import { Link, useLoaderData } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
   json,
   type LoaderFunction,
@@ -10,9 +10,18 @@ import {
   redirect,
 } from "@remix-run/node";
 import { getSession } from "lib/session.server";
-import { UserType } from "types/types";
 import { connect } from "lib/mongodb";
 import User from "model/user";
+import SearchPopup from "~/components/SearchPopup";
+
+export interface UserType {
+  _id: string
+  fullname: string;
+  email: string;
+  status: string;
+  image: string;
+  username:string
+}
 
 interface Message {
   id: number;
@@ -28,10 +37,12 @@ interface Chat {
   timestamp: string;
   unread: number;
 }
-
 interface FetchType {
   user: UserType;
+  users: UserType
 }
+
+
 
 export const loader: LoaderFunction = async ({
   request,
@@ -60,6 +71,23 @@ export default function ChatPage() {
   const [message, setMessage] = useState("");
   const [showSidebar, setShowSidebar] = useState(false);
   const loaderData = useLoaderData<FetchType>();
+  const [query, setQuery] = useState("")
+  const fetcher = useFetcher<FetchType>();
+const users = (fetcher.data?.users ) || [];
+
+
+  useEffect(()=>{
+    if(query.length < 2)
+    if(query){
+      const formdata = new FormData()
+      formdata.append("query", query)
+      fetcher.submit(formdata, {
+        method: "post",
+        action: "/backendsearch",
+      });
+    }
+  },[query])
+
 
   const chats: Chat[] = [
     {
@@ -138,12 +166,14 @@ export default function ChatPage() {
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between gap-4 px-2">
             <h1 className="text-xl font-bold text-blue-600">ChatApp</h1>
-            <div className="flex-1 mx-4">
+            <div className="relative flex-1 mx-4">
               <input
                 type="text"
                 placeholder="Search chats..."
+                onChange={(e) => setQuery(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              <SearchPopup users={users} />
             </div>
             <Link to="/profile" className="relative group">
               {loaderData.user?.image ? (

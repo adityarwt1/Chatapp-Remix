@@ -9,6 +9,7 @@ export interface EditType {
 // inprifile
 
 export interface UserType {
+  _id: string
   fullname: string;
   email: string;
   status: string;
