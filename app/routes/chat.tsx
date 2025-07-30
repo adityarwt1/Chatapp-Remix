@@ -2,7 +2,12 @@
 
 import type React from "react";
 import { useState } from "react";
-import { Link } from "@remix-run/react";
+import { Link,  useLoaderData } from "@remix-run/react";
+import { json, LoaderFunction, LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { getSession } from "lib/session.server";
+import { UserType } from "types/types";
+import { connect } from "lib/mongodb";
+import User from "model/user";
 
 interface Message {
   id: number;
@@ -19,10 +24,32 @@ interface Chat {
   unread: number;
 }
 
+interface FetchType{
+  user: UserType
+}
+export const loader: LoaderFunction = async({request}: LoaderFunctionArgs)=>{
+  try {
+    const session = await getSession(request)
+    const userdata= session.get("user")
+    if(!userdata){
+      return redirect("/login")
+    }
+    await connect()
+    const user = await User.findOne({username: userdata.username})
+
+    return json({message:"Chat Page" ,user},{status: 200})
+  } catch (error) {
+    console.log((error as Error).message)
+    return json({message: "Internal server issue", error: "Internal user issue"},{status: 500})
+  }
+
+}
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState<number | null>(1);
   const [message, setMessage] = useState("");
   const [showSidebar, setShowSidebar] = useState(false);
+   const loaderData = useLoaderData<FetchType>();
+   console.log("this is the data ", loaderData);
 
   const chats: Chat[] = [
     {
@@ -103,7 +130,9 @@ export default function ChatPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-blue-600">ChatApp</h1>
             <Link to="/profile" className="text-gray-600 hover:text-blue-600">
-              <svg
+              {loaderData.user?.image ? (
+                <img src={loaderData.user?.image } alt="" />
+              ):  <svg
                 className="w-6 h-6"
                 fill="none"
                 stroke="currentColor"
@@ -115,7 +144,7 @@ export default function ChatPage() {
                   strokeWidth={2}
                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 />
-              </svg>
+              </svg>}
             </Link>
           </div>
         </div>

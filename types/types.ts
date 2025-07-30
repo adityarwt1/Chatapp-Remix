@@ -15,3 +15,4 @@ export interface UserType {
   image: string;
   username:string
 }
+
