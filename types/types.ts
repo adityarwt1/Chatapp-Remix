@@ -1,8 +1,8 @@
-export interface EditType{
-    name: string,
-    email: string,
-    status: string
-    username: string
+export interface EditType {
+  name: string;
+  email: string;
+  status: string;
+  username: string;
 }
 
 

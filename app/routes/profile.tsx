@@ -21,6 +21,10 @@ interface TypeLoader {
 interface FetcherType {
   user: {
     image: string;
+    fullname: string
+    username: string
+    email :string
+    status:string
   };
 }
 
@@ -70,7 +74,7 @@ export const action: ActionFunction = async ({
       for (const [key, value] of formdata.entries()) {
         data[key as keyof EditType] = value.toString();
       }
-
+  console.log(data)
       const user = await User.findOneAndUpdate(
         { username: sessionUser.username },
         {
@@ -257,6 +261,7 @@ export default function ProfilePage() {
               <option value="Away">Away</option>
               <option value="Offline">Offline</option>
             </select>
+
             {/* Ensure status is always submitted */}
             <input type="hidden" name="status" value={userData.user.status} />
           </div>
