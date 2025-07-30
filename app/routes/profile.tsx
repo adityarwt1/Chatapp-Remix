@@ -12,13 +12,8 @@ import { connect } from "lib/mongodb";
 import { getSession } from "lib/session.server";
 import User from "model/user";
 import React from "react";
+import { EditType, UserType } from "types/types";
 
-interface UserType {
-  fullname: string;
-  email: string;
-  status: string;
-  image: string;
-}
 interface TypeLoader {
   user: UserType;
 }
@@ -28,91 +23,106 @@ interface FetcherType {
     image: string;
   };
 }
+
+// 🚀 LOADER
 export const loader: LoaderFunction = async ({ request }) => {
   try {
     const session = await getSession(request);
-    const userdda = session.get("user");
-    if (!userdda.username) {
-      return redirect("/login");
-    }
+    const userSession = session.get("user");
+    if (!userSession?.username) return redirect("/login");
+
     await connect();
-    const user = await User.findOne({ username: userdda.username });
+    const user = await User.findOne({ username: userSession.username });
+    if (!user) return redirect("/login");
+
     return json({ user });
   } catch (error) {
     console.log((error as Error).message);
-    return json({ message: "Internal server issue" });
+    return json({ message: "Internal server issue" }, { status: 500 });
   }
 };
 
+// 🚀 ACTION
 export const action: ActionFunction = async ({
   request,
 }: ActionFunctionArgs) => {
   try {
     const session = await getSession(request);
-    const userdata = session.get("user");
-    const formadata = await request.formData();
+    const sessionUser = session.get("user");
+    const formdata = await request.formData();
 
-    if (formadata.has("image")) {
-      const image = formadata.get("image");
-      await connect();
+    await connect();
+
+    // ✅ Handle image upload
+    if (formdata.has("image")) {
+      const image = formdata.get("image")?.toString();
       const user = await User.findOneAndUpdate(
-        {
-          username: userdata?.username,
-        },
-        {
-          image,
-        },
-        {
-          new: true,
-        }
+        { username: sessionUser.username },
+        { image },
+        { new: true }
       );
       return json({ user }, { status: 200 });
     }
-    return json({ message: "done" });
+
+    // ✅ Handle profile info update
+    if (formdata.has("status")) {
+      const data: Partial<EditType> = {};
+      for (const [key, value] of formdata.entries()) {
+        data[key as keyof EditType] = value.toString();
+      }
+
+      const user = await User.findOneAndUpdate(
+        { username: sessionUser.username },
+        {
+          fullname: data.name,
+          email: data.email,
+          status: data.status,
+        },
+        { new: true }
+      );
+
+      if (!user) {
+        return json({ error: "User not found" }, { status: 404 });
+      }
+
+      return json({ user }, { status: 200 });
+    }
+
+    return json({ message: "Nothing to update" });
   } catch (error) {
     console.log((error as Error).message);
-    return json({ error: "Internal server issue" }, { status: 500 });
+    return json({ error: "Internal server error" }, { status: 500 });
   }
 };
-//// handlking the saves
+
+// 📄 COMPONENT
 export default function ProfilePage() {
-  const loaderdata = useLoaderData<TypeLoader>();
+  const loaderData = useLoaderData<TypeLoader>();
   const fetcher = useFetcher<FetcherType>();
+  const userData = fetcher.data?.user ? fetcher.data : loaderData;
   const isLoading = fetcher.state === "submitting";
 
-  ///base64 image
-
+  // 📦 Convert image to base64
   const base64Format = async (file: File) => {
-    try {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (e) => reject(e);
-        reader.readAsDataURL(file);
-      });
-    } catch (error) {
-      console.log((error as Error).message)
-      
-    }
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (e) => reject(e);
+      reader.readAsDataURL(file);
+    });
   };
+
+  // 🖼️ Handle image input
   const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = e.target.files?.[0];
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      const imageUrl = await base64Format(file as File);
-
-      const formdata = new FormData();
-
-      formdata.append("image", imageUrl as string);
-
-      fetcher.submit(formdata, {
-        method: "post",
-      });
-    } catch (error) {
-      console.log((error as Error).message);
-    }
+    const imageUrl = await base64Format(file);
+    const formdata = new FormData();
+    formdata.append("image", imageUrl);
+    fetcher.submit(formdata, { method: "post" });
   };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -141,30 +151,33 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Profile Picture */}
         <div className="text-center mb-8">
-          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
-            {loaderdata.user.image ? (
+          <div className="w-24 h-24 bg-blue-100 rounded-full overflow-hidden mx-auto mb-4">
+            {userData.user.image ? (
               <img
-                src={loaderdata.user.image}
-                className="w-full h-full object-cover rounded-full"
+                src={userData.user.image}
                 alt="Profile"
+                className="w-full h-full object-cover rounded-full"
               />
             ) : (
-              <svg
-                className="w-12 h-12 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
+              <div className="w-full h-full flex items-center justify-center">
+                <svg
+                  className="w-12 h-12 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
             )}
           </div>
 
@@ -184,51 +197,59 @@ export default function ProfilePage() {
           </label>
         </div>
 
-        {/* Profile Form */}
-        <fetcher.Form className="space-y-6" method="post">
+        {/* Profile Info Form */}
+        <fetcher.Form method="post" className="space-y-6">
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <label htmlFor="name" className="block text-sm font-medium mb-2">
               Full Name
             </label>
             <input
               type="text"
               id="name"
               name="name"
-              defaultValue={loaderdata.user.fullname}
+              defaultValue={userData.user.fullname}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
 
           <div>
             <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              htmlFor="username"
+              className="block text-sm font-medium mb-2"
             >
-              Email Address
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              defaultValue={userData.user.username}
+              readOnly
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium mb-2">
+              Email
             </label>
             <input
               type="email"
               id="email"
               name="email"
-              defaultValue={loaderdata.user.email || "example@gmail.com"}
+              defaultValue={userData.user.email || "example@gmail.com"}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="status"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <label htmlFor="status" className="block text-sm font-medium mb-2">
               Status
             </label>
             <select
               id="status"
               name="status"
-              defaultValue={loaderdata.user.status ?? loaderdata.user.status}
+              defaultValue={userData.user.status ?? "Available"}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             >
               <option value="Available">Available</option>
@@ -236,11 +257,13 @@ export default function ProfilePage() {
               <option value="Away">Away</option>
               <option value="Offline">Offline</option>
             </select>
+            {/* Ensure status is always submitted */}
+            <input type="hidden" name="status" value={userData.user.status} />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition"
           >
             {isLoading ? "Saving..." : "Save Changes"}
           </button>
