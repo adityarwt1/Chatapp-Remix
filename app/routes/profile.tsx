@@ -74,7 +74,7 @@ export const action: ActionFunction = async ({
       for (const [key, value] of formdata.entries()) {
         data[key as keyof EditType] = value.toString();
       }
-  console.log(data)
+       console.log(data)
       const user = await User.findOneAndUpdate(
         { username: sessionUser.username },
         {
@@ -92,7 +92,7 @@ export const action: ActionFunction = async ({
       return json({ user }, { status: 200 });
     }
 
-    return json({ message: "Nothing to update" });
+     return json({ message: "Nothing to update" });
   } catch (error) {
     console.log((error as Error).message);
     return json({ error: "Internal server error" }, { status: 500 });
@@ -105,6 +105,7 @@ export default function ProfilePage() {
   const fetcher = useFetcher<FetcherType>();
   const userData = fetcher.data?.user ? fetcher.data : loaderData;
   const isLoading = fetcher.state === "submitting";
+  const isLogoutLoading = fetcher.state ==="submitting"
 
   // 📦 Convert image to base64
   const base64Format = async (file: File) => {
@@ -126,7 +127,13 @@ export default function ProfilePage() {
     formdata.append("image", imageUrl);
     fetcher.submit(formdata, { method: "post" });
   };
-
+const handleLogout = async()=>{
+  try {
+     await fetch("/logout",{method: "POST"})
+  } catch (error) {
+    console.log((error as Error).message)
+  }
+}
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -271,6 +278,13 @@ export default function ProfilePage() {
             className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition"
           >
             {isLoading ? "Saving..." : "Save Changes"}
+          </button>
+          <button
+          onClick={handleLogout}
+            name="_logout"
+            className="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-700 transition"
+          >
+            {isLogoutLoading ? "Logout..." : "Logout"}
           </button>
         </fetcher.Form>
       </div>
