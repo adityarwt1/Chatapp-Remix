@@ -77,7 +77,6 @@ export const action: ActionFunction = async ({
 //// handlking the saves
 export default function ProfilePage() {
   const loaderdata = useLoaderData<TypeLoader>();
-  console.log("this is the loader data", loaderdata);
   const fetcher = useFetcher<FetcherType>();
   const isLoading = fetcher.state === "submitting";
 
@@ -121,8 +120,7 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center">
             <Link to="/chat" className="text-blue-600 hover:text-blue-700 mr-4">
-              {loaderdata.user.image ? (
-                <svg
+                  <svg
                   className="w-6 h-6"
                   fill="none"
                   stroke="currentColor"
@@ -135,9 +133,6 @@ export default function ProfilePage() {
                     d="M15 19l-7-7 7-7"
                   />
                 </svg>
-              ) : (
-                <img src={fetcher.data?.user.image} alt="" />
-              )}
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">
               Profile Settings
@@ -150,6 +145,9 @@ export default function ProfilePage() {
         {/* Profile Picture */}
         <div className="text-center mb-8">
           <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            
+                { loaderdata.user.image ? (
+                  <img src={loaderdata.user.image} className="object-cover" alt="Profile"/>):(
             <svg
               className="w-12 h-12 text-blue-600"
               fill="none"
@@ -162,7 +160,7 @@ export default function ProfilePage() {
                 strokeWidth={2}
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
-            </svg>
+            </svg>)}
           </div>
           <input
             type="file"
