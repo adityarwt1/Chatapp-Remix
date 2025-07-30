@@ -1,5 +1,5 @@
 // app/components/SearchPopup.tsx
-import { Link } from "@remix-run/react";
+import { useFetcher } from "@remix-run/react";
 interface Logs {
   fullname: string;
   username: string;
@@ -11,12 +11,24 @@ interface UserType{
  users: Logs[]
 }
 export default function SearchPopup({ users }: UserType) {
+  const fetcher = useFetcher()
 
+  const handleAdd = async (id: string)=>{
+    try {
+      const formdata  = new FormData()
+      formdata.append("id", id)
+      fetcher.submit(formdata,{
+        method: "POST",
+        action: "/backendchant"
+      })
+    } catch (error) {
+      console.log((error as Error).message)
+    }
+  }
   return (
     <div className="absolute z-50 bg-white border rounded-lg shadow-md mt-2 w-full max-h-64 overflow-y-auto">
       {users.map((user : Logs) => (
-        <Link
-          to={`/chat/${user.username}`}
+        <fetcher.Form onClick={()=> handleAdd(user._id)}
           key={user._id}
           className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
         >
@@ -29,7 +41,7 @@ export default function SearchPopup({ users }: UserType) {
             <span className="text-sm font-medium">{user.fullname}</span>
             <span className="text-xs text-gray-500">{user.status}</span>
           </div>
-        </Link>
+        </fetcher.Form>
       ))}
     </div>
   );
