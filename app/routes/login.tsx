@@ -27,7 +27,6 @@ export const action: ActionFunction = async ({
 }: ActionFunctionArgs) => {
   try {
     const formdata = await request.formData();
-    console.log(formdata);
 
     const data: Partial<Formdata> = {};
 
@@ -53,7 +52,12 @@ export const action: ActionFunction = async ({
     );
     if (isPasswordTrue) {
       const cookie = await session.getSession();
-      cookie.set("user", user);
+      const usrdata = {
+        username: user.username,
+        email: user.email,
+        _id: user._id
+      }
+      cookie.set("user", usrdata);
       return redirect("/chat", {
         headers: {
           "Set-Cookie": await session.commitSession(cookie),
