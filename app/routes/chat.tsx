@@ -15,6 +15,7 @@ import User from "model/user";
 import SearchPopup from "~/components/SearchPopup";
 import ChatModel from "model/chats";
 import mongoose from "mongoose";
+import Message from "model/message";
 
 export interface UserType {
   _id: string
@@ -89,8 +90,12 @@ export const loader: LoaderFunction = async ({
         }
       }
     }
-    console.log("chat users", chats)
     
+
+    /// getting the message+
+
+    await connect()
+    const message = await Message.find({})
     return json({ message: "Chat Page", user ,chats }, { status: 200 });
   } catch (error) {
     console.log((error as Error).message);
