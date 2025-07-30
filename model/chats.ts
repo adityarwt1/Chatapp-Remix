@@ -6,6 +6,7 @@ export interface Chat extends Document {
   participant2: mongoose.Types.ObjectId;
   lastmessage: string;
   time: Date;
+  lastMessage: string
 }
 
 // Create the Chat schema
@@ -28,6 +29,9 @@ const ChatSchema: Schema<Chat> = new Schema(
       type: Date,
       default: Date.now,
     },
+    lastMessage:{
+      type: String
+    }
   },
   {
     timestamps: true, // adds createdAt and updatedAt automatically

@@ -74,13 +74,13 @@ export const loader: LoaderFunction = async ({
       for(let i = 0; i < chat.length; i++){
         if(String(chat[i].participant1) !== String(userdata._id) ){
           const user = await User.findOne({ _id: chat[i].participant2 }).select(
-            "fullname username status image"
+            "fullname username status image updatedAt"
           );
           chats.push(user)
         }
         if(String(chat[i].participant2) !== String(userdata._id)){
           const user = await User.findOne({ _id: chat[i].participant2 }).select(
-            "fullname username status image"
+            "fullname username status image updatedAt"
           );
           chats.push(user);
         }
@@ -91,7 +91,7 @@ export const loader: LoaderFunction = async ({
     }
     console.log("chat users", chats)
     
-    return json({ message: "Chat Page", user }, { status: 200 });
+    return json({ message: "Chat Page", user ,chats }, { status: 200 });
   } catch (error) {
     console.log((error as Error).message);
     return json(
@@ -240,29 +240,36 @@ const users = (fetcher.data?.users ) || [];
 
         {/* Chat List */}
         <div className="flex-1 overflow-y-auto">
-          {chats.map((chat) => (
+          {loaderData?.chats.map((chat) => (
             <button
               key={chat.id}
               type="button"
               onClick={() => {
-                setSelectedChat(chat.id);
+                setSelectedChat(chat._id);
                 setShowSidebar(false);
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 text-left w-full ${
-                selectedChat === chat.id
+                selectedChat === chat._id
                   ? "bg-blue-50 border-r-2 border-blue-600"
                   : ""
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{chat.name}</h3>
+                  <h3 className="font-medium text-gray-900">{chat.fullname}</h3>
                   <p className="text-sm text-gray-600 truncate">
-                    {chat.lastMessage}
+                    {chat.lastMessage || "Start Chatting!"}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-500">{chat.timestamp}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(chat.updatedAt)
+                      .toLocaleTimeString("en-IN", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                  </p>
                   {chat.unread > 0 && (
                     <span className="inline-block bg-blue-600 text-white text-xs rounded-full px-2 py-1 mt-1">
                       {chat.unread}
