@@ -8,10 +8,10 @@ import {
   redirect,
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
-import { connect, disconnect } from "lib/mongodb";
+import { connect } from "lib/mongodb";
 import { getSession } from "lib/session.server";
 import User from "model/user";
-import React, { useState } from "react";
+import React from "react";
 
 interface UserType {
   fullname: string;
@@ -37,7 +37,6 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
     await connect();
     const user = await User.findOne({ username: userdda.username });
-    console.log("userdata", user);
     return json({ user });
   } catch (error) {
     console.log((error as Error).message);
@@ -84,7 +83,7 @@ export default function ProfilePage() {
 
   ///base64 image
 
-  const base64Format = async (file: any) => {
+  const base64Format = async (file: File) => {
     try {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -93,13 +92,16 @@ export default function ProfilePage() {
         reader.onerror = (e) => reject(e);
         reader.readAsDataURL(file);
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log((error as Error).message)
+      
+    }
   };
   const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = e.target.files?.[0];
 
-      const imageUrl = await base64Format(file);
+      const imageUrl = await base64Format(file as File);
 
       const formdata = new FormData();
 
