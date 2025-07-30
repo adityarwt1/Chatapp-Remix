@@ -2,8 +2,13 @@
 
 import type React from "react";
 import { useState } from "react";
-import { Link,  useLoaderData } from "@remix-run/react";
-import { json, LoaderFunction, LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
+import {
+  json,
+  type LoaderFunction,
+  type LoaderFunctionArgs,
+  redirect,
+} from "@remix-run/node";
 import { getSession } from "lib/session.server";
 import { UserType } from "types/types";
 import { connect } from "lib/mongodb";
@@ -24,32 +29,37 @@ interface Chat {
   unread: number;
 }
 
-interface FetchType{
-  user: UserType
+interface FetchType {
+  user: UserType;
 }
-export const loader: LoaderFunction = async({request}: LoaderFunctionArgs)=>{
+
+export const loader: LoaderFunction = async ({
+  request,
+}: LoaderFunctionArgs) => {
   try {
-    const session = await getSession(request)
-    const userdata= session.get("user")
-    if(!userdata){
-      return redirect("/login")
+    const session = await getSession(request);
+    const userdata = session.get("user");
+    if (!userdata) {
+      return redirect("/login");
     }
-    await connect()
-    const user = await User.findOne({username: userdata.username})
+    await connect();
+    const user = await User.findOne({ username: userdata.username });
 
-    return json({message:"Chat Page" ,user},{status: 200})
+    return json({ message: "Chat Page", user }, { status: 200 });
   } catch (error) {
-    console.log((error as Error).message)
-    return json({message: "Internal server issue", error: "Internal user issue"},{status: 500})
+    console.log((error as Error).message);
+    return json(
+      { message: "Internal server issue", error: "Internal user issue" },
+      { status: 500 }
+    );
   }
+};
 
-}
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState<number | null>(1);
   const [message, setMessage] = useState("");
   const [showSidebar, setShowSidebar] = useState(false);
-   const loaderData = useLoaderData<FetchType>();
-   console.log("this is the data ", loaderData);
+  const loaderData = useLoaderData<FetchType>();
 
   const chats: Chat[] = [
     {
@@ -112,24 +122,29 @@ export default function ChatPage() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
-      // Handle sending message
       setMessage("");
     }
   };
 
   return (
-    <div className="h-screen bg-white flex">
-      {/* Sidebar */}
+    <div className="h-screen flex">
+      {/* Sidebar (30%) */}
       <div
         className={`${
           showSidebar ? "block" : "hidden"
-        } md:block w-full md:w-80 bg-white border-r border-gray-200 flex flex-col`}
+        } md:block w-full md:w-[30%] bg-white border-r border-gray-200 flex flex-col`}
       >
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4 px-2">
             <h1 className="text-xl font-bold text-blue-600">ChatApp</h1>
-
+            <div className="flex-1 mx-4">
+              <input
+                type="text"
+                placeholder="Search chats..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
             <Link to="/profile" className="relative group">
               {loaderData.user?.image ? (
                 <img
@@ -170,7 +185,7 @@ export default function ChatPage() {
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 text-left w-full ${
                 selectedChat === chat.id
-                  ? "bg-blue-50 border-r-2 border-r-blue-600"
+                  ? "bg-blue-50 border-r-2 border-blue-600"
                   : ""
               }`}
             >
@@ -195,8 +210,8 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      {/* Chat Area (70%) */}
+      <div className="w-full md:w-[70%] flex flex-col">
         {selectedChat ? (
           <>
             {/* Chat Header */}
