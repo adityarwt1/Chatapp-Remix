@@ -2,6 +2,7 @@
 
 import {
   ActionFunction,
+  ActionFunctionArgs,
   json,
   LoaderFunction,
   redirect,
@@ -36,7 +37,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
     await connect();
     const user = await User.findOne({ username: userdda.username });
-
+    console.log("userdata", user);
     return json({ user });
   } catch (error) {
     console.log((error as Error).message);
@@ -44,7 +45,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({
+  request,
+}: ActionFunctionArgs) => {
   try {
     const session = await getSession(request);
     const userdata = session.get("user");
@@ -66,6 +69,7 @@ export const action: ActionFunction = async ({ request }) => {
       );
       return json({ user }, { status: 200 });
     }
+    return json({ message: "done" });
   } catch (error) {
     console.log((error as Error).message);
     return json({ error: "Internal server issue" }, { status: 500 });
