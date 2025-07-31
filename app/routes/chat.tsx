@@ -267,7 +267,10 @@ const users = (fetcher.data?.users ) || [];
                   </svg>
                 </button>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  {loaderData.chats.find((c) => c._id === selectedChat)?.fullname}
+                  {
+                    loaderData.chats.find((c) => c._id === selectedChat)
+                      ?.fullname
+                  }
                 </h2>
               </div>
             </div>
@@ -305,7 +308,11 @@ const users = (fetcher.data?.users ) || [];
 
             {/* Message Input */}
             <div className="p-4 border-t border-gray-200 bg-white">
-              <fetcher.Form  className="flex space-x-2">
+              <fetcher.Form
+                className="flex space-x-2"
+                method="post"
+                action={`/backendsendmessage?chatid=${selectedChat}&sender=${loaderData?.user?._id}`}
+              >
                 <input
                   type="text"
                   name="message"
@@ -317,7 +324,7 @@ const users = (fetcher.data?.users ) || [];
                   disabled={isSending}
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  {isSending ?"Sending...": "Send"}
+                  {isSending ? "Sending..." : "Send"}
                 </button>
               </fetcher.Form>
             </div>
