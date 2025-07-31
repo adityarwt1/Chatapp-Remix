@@ -68,36 +68,26 @@ export const loader: LoaderFunction = async ({
         {participant2 : userA}
       ]
      })
-    
     let chats =[]
     if(chat.length >0){
       for(let i = 0; i < chat.length; i++){
-        if(String(chat[i].participant1) !== String(userdata?._id) ){
-          const user = await User.findOne({ _id: chat[i].participant2 }).select(
-            "fullname username status image updatedAt"
-          );
-          chats.push(user)
-        }
-        if(String(chat[i].participant2) !== String(userdata?._id)){
-          const user = await User.findOne({ _id: chat[i].participant2 }).select(
-            "fullname username status image updatedAt"
-          );
-          chats.push(user);
-        }
-        else{
-          break;
-        }
+        const id =
+          chat[i]?.participant1 !== user?._id
+            ? chat[i].participant1
+            : chat[i]?.participant2
+        const userdata = await User.findOne({_id: new mongoose.Types.ObjectId(id as string)})
+        chats.push(userdata)
       }
     }
-    console.log("this lenght data found on the chats", chats.length)
+    console.log("this lenght data found on the chats", chats)
 
     /// getting the message+
 
     await connect()
     const messages = []
-    for(let i = 0 ; i < chats.length; i++){
-      const message = await Message.find({_id: chats[i]?._id})
-      messages.push("this is the message on the ",message)
+    for(let i = 0 ; i < chat.length; i++){
+      const message = await Message.find({chatid: chat[i]?._id})
+      messages.push(message)
     }
     console.log(messages)
     return json({ message: "Chat Page", user ,chats }, { status: 200 });
