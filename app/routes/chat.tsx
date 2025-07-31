@@ -61,7 +61,7 @@ export const loader: LoaderFunction = async ({
 
     //// extracting the chat from the database
 
-    const userA = new mongoose.Types.ObjectId(userdata._id as string)
+    const userA = new mongoose.Types.ObjectId(userdata?._id as string)
     const chat = await ChatModel.find({ 
       $or:[
         {participant1: userA},
@@ -72,13 +72,13 @@ export const loader: LoaderFunction = async ({
     let chats =[]
     if(chat.length >0){
       for(let i = 0; i < chat.length; i++){
-        if(String(chat[i].participant1) !== String(userdata._id) ){
+        if(String(chat[i].participant1) !== String(userdata?._id) ){
           const user = await User.findOne({ _id: chat[i].participant2 }).select(
             "fullname username status image updatedAt"
           );
           chats.push(user)
         }
-        if(String(chat[i].participant2) !== String(userdata._id)){
+        if(String(chat[i].participant2) !== String(userdata?._id)){
           const user = await User.findOne({ _id: chat[i].participant2 }).select(
             "fullname username status image updatedAt"
           );
@@ -96,7 +96,7 @@ export const loader: LoaderFunction = async ({
     await connect()
     const messages = []
     for(let i = 0 ; i < chats.length; i++){
-      const message = await Message.find({_id: chats[i]._id})
+      const message = await Message.find({_id: chats[i]?._id})
       messages.push("this is the message on the ",message)
     }
     console.log(messages)
@@ -117,7 +117,7 @@ export default function ChatPage() {
   const fetcher = useFetcher<FetchType>();
   const isSending = fetcher.state ==="submitting"
   const users = (fetcher.data?.users ) || [];
-  const [selectedChat, setSelectedChat] = useState<number | null>(loaderData?.chats?.at(0)._id);
+  const [selectedChat, setSelectedChat] = useState<number | null>(loaderData?.chats?.at(0)?._id);
 
 
   useEffect(()=>{
@@ -206,7 +206,7 @@ const handleChatsLoad = async (id: string)=>{
               key={chat.id}
               type="button"
               onClick={() => {
-                setSelectedChat(chat._id);
+                setSelectedChat(chat?._id);
                 setShowSidebar(false);
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 text-left w-full ${
