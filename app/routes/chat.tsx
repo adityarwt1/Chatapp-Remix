@@ -312,7 +312,7 @@ const handleChatsLoad = async (id: string)=>{
                     <p>{msg.message}</p>
                     <p
                       className={`text-xs mt-1 ${
-                        msg.sender === "user"
+                        msg.sender === loaderData?.user?._id
                           ? "text-blue-100"
                           : "text-gray-500"
                       }`}
