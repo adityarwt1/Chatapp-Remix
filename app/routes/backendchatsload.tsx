@@ -12,9 +12,8 @@ if(!id){
     return json({message: "id must be requered"},{status: 400})
 }
     await connect()
-    const messages = await Message.find({_id: id})
+    const messages = await Message.find({ chatid: id });
 
-    
     return json({ message: "message sen succeesufully" , messages});
   } catch (error) {
     console.log((error as Error).message);

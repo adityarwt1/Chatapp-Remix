@@ -111,13 +111,13 @@ export const loader: LoaderFunction = async ({
 };
 
 export default function ChatPage() {
-  const [selectedChat, setSelectedChat] = useState<number | null>(1);
   const [showSidebar, setShowSidebar] = useState(false);
   const loaderData = useLoaderData<FetchType>();
   const [query, setQuery] = useState("")
   const fetcher = useFetcher<FetchType>();
   const isSending = fetcher.state ==="submitting"
-const users = (fetcher.data?.users ) || [];
+  const users = (fetcher.data?.users ) || [];
+  const [selectedChat, setSelectedChat] = useState<number | null>(loaderData?.chats?.at(0)._id);
 
 
   useEffect(()=>{
@@ -132,7 +132,23 @@ const users = (fetcher.data?.users ) || [];
     }
   },[query])
 
+const handleChatsLoad = async (id: string)=>{
+  try {
+    const fordata = new FormData()
+    fordata.append("azenda", "fetchchats")
 
+    fetcher.submit(fordata, {
+      method: "POST",
+      action: `/backendchatsload?id=${id}`,
+    });
+    
+  } catch (error) {
+    console.log((error as Error).message)
+  }
+}
+  useEffect(()=>{
+    handleChatsLoad(selectedChat as string)
+  },[selectedChat])
   
   return (
     <div className="h-screen flex">
@@ -277,21 +293,23 @@ const users = (fetcher.data?.users ) || [];
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((msg) => (
+              {fetcher.data?.messages.map((msg) => (
                 <div
-                  key={msg.id}
+                  key={msg._id}
                   className={`flex ${
-                    msg.sender === "user" ? "justify-end" : "justify-start"
+                    msg.sender === loaderData?.user?._id
+                      ? "justify-end"
+                      : "justify-start"
                   }`}
                 >
                   <div
                     className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                      msg.sender === "user"
+                      msg.sender === loaderData?.user?._id
                         ? "bg-blue-600 text-white"
                         : "bg-gray-100 text-gray-900"
                     }`}
                   >
-                    <p>{msg.text}</p>
+                    <p>{msg.message}</p>
                     <p
                       className={`text-xs mt-1 ${
                         msg.sender === "user"
@@ -299,7 +317,11 @@ const users = (fetcher.data?.users ) || [];
                           : "text-gray-500"
                       }`}
                     >
-                      {msg.timestamp}
+                      {new Date(msg.createdAt).toLocaleTimeString("en-IN", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
                     </p>
                   </div>
                 </div>
@@ -345,63 +367,5 @@ const users = (fetcher.data?.users ) || [];
 }
 
 
-
-  const chats: Chat[] = [
-    {
-      id: 1,
-      name: "John Doe",
-      lastMessage: "Hey, how are you?",
-      timestamp: "2:30 PM",
-      unread: 2,
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      lastMessage: "See you tomorrow!",
-      timestamp: "1:15 PM",
-      unread: 0,
-    },
-    {
-      id: 3,
-      name: "Team Chat",
-      lastMessage: "Meeting at 3 PM",
-      timestamp: "12:45 PM",
-      unread: 5,
-    },
-    {
-      id: 4,
-      name: "Alice Johnson",
-      lastMessage: "Thanks for your help",
-      timestamp: "11:30 AM",
-      unread: 0,
-    },
-  ];
-
-  const messages: Message[] = [
-    {
-      id: 1,
-      text: "Hey there! How are you doing?",
-      sender: "other",
-      timestamp: "2:25 PM",
-    },
-    {
-      id: 2,
-      text: "I'm doing great, thanks for asking!",
-      sender: "user",
-      timestamp: "2:26 PM",
-    },
-    {
-      id: 3,
-      text: "That's awesome to hear!",
-      sender: "other",
-      timestamp: "2:27 PM",
-    },
-    {
-      id: 4,
-      text: "How was your weekend?",
-      sender: "other",
-      timestamp: "2:30 PM",
-    },
-  ];
 
   
