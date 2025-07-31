@@ -79,15 +79,17 @@ export const loader: LoaderFunction = async ({
         chats.push(userdata)
       }
     }
-    console.log("this lenght data found on the chats", chats)
+    console.log(chat)
+    console.log("this lenght data found on the chats", chats.length)
 
     /// getting the message+
 
     await connect()
     const messages = []
-    for(let i = 0 ; i < chat.length; i++){
-      const message = await Message.find({chatid: chat[i]?._id})
-      messages.push(message)
+    for(let i = 0; i< chat.length ; i++){
+      console.log(chat[i]?._id);
+      const messager = await Message.find({chatid: chat[i]?._id})
+      messages.push(messager)
     }
     console.log(messages)
     return json({ message: "Chat Page", user ,chats }, { status: 200 });
