@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
   json,
@@ -33,13 +33,7 @@ interface Message {
   timestamp: string;
 }
 
-interface Chat {
-  id: number;
-  name: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: number;
-}
+
 interface FetchType {
   user: UserType;
   users: UserType
@@ -79,19 +73,16 @@ export const loader: LoaderFunction = async ({
         chats.push(userdata)
       }
     }
-    console.log(chat)
     console.log("this lenght data found on the chats", chats.length)
 
     /// getting the message+
 
     await connect()
     const messages = []
-    for(let i = 0; i< chat.length ; i++){
-      console.log(chat[i]?._id);
-      const messager = await Message.find({chatid: chat[i]?._id})
+    for(let i = 0; i< chats.length ; i++){
+      const messager = await Message.find({chatid: chats[i]?._id})
       messages.push(messager)
     }
-    console.log(messages)
     return json({ message: "Chat Page", user ,chats }, { status: 200 });
   } catch (error) {
     console.log((error as Error).message);
@@ -142,6 +133,15 @@ const handleChatsLoad = async (id: string)=>{
     handleChatsLoad(selectedChat as string)
   },[selectedChat])
   
+
+   const chatContainerRef = useRef<HTMLDivElement>(null);
+
+   useEffect(() => {
+     if (chatContainerRef.current) {
+       chatContainerRef.current.scrollTop =
+         chatContainerRef.current.scrollHeight;
+     }
+   }, [fetcher.data?.messages]);
   return (
     <div className="h-screen flex">
       {/* Sidebar (30%) */}
@@ -195,14 +195,14 @@ const handleChatsLoad = async (id: string)=>{
         <div className="flex-1 overflow-y-auto">
           {loaderData?.chats.map((chat) => (
             <button
-              key={chat.id}
+              key={chat._id}
               type="button"
               onClick={() => {
                 setSelectedChat(chat?._id);
                 setShowSidebar(false);
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 text-left w-full ${
-                selectedChat === chat._id
+                selectedChat === chat?._id
                   ? "bg-blue-50 border-r-2 border-blue-600"
                   : ""
               }`}
@@ -212,7 +212,7 @@ const handleChatsLoad = async (id: string)=>{
                 <div className="flex items-center gap-3 flex-1">
                   {/* Profile Image */}
                   <img
-                    src={chat.image || "/default-avatar.png"} // fallback image
+                    src={chat.image || "/logo.svg"} // fallback image
                     alt={chat.fullname}
                     className="w-10 h-10 rounded-full object-cover"
                   />
@@ -276,7 +276,7 @@ const handleChatsLoad = async (id: string)=>{
                 </button>
                 <h2 className="text-lg font-semibold text-gray-900">
                   {
-                    loaderData.chats.find((c) => c._id === selectedChat)
+                    loaderData?.chats.find((c) => c._id === selectedChat)
                       ?.fullname
                   }
                 </h2>
@@ -284,8 +284,11 @@ const handleChatsLoad = async (id: string)=>{
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {fetcher.data?.messages.map((msg) => (
+            <div
+              ref={chatContainerRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4"
+            >
+              {fetcher.data?.messages?.map((msg) => (
                 <div
                   key={msg._id}
                   className={`flex ${
@@ -310,10 +313,10 @@ const handleChatsLoad = async (id: string)=>{
                       }`}
                     >
                       {new Date(msg.createdAt).toLocaleTimeString("en-IN", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    })}
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                     </p>
                   </div>
                 </div>
