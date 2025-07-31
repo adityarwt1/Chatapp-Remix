@@ -67,12 +67,13 @@ export const loader: LoaderFunction = async ({
       for(let i = 0; i < chat.length; i++){
         const id =
           chat[i]?.participant1 !== user?._id
-            ? chat[i].participant1
-            : chat[i]?.participant2
+            ? chat[i].participant2
+            : chat[i]?.participant1
         const userdata = await User.findOne({_id: new mongoose.Types.ObjectId(id as string)})
         chats.push(userdata)
       }
     }
+    console.log(chats)
     console.log("this lenght data found on the chats", chats.length)
 
     /// getting the message+
@@ -101,6 +102,7 @@ export default function ChatPage() {
   const isSending = fetcher.state ==="submitting"
   const users = (fetcher.data?.users ) || [];
   const [selectedChat, setSelectedChat] = useState<number | null>(loaderData?.chats?.at(0)?._id);
+  const [message, setMessage] = useState<string>("")
 
 
   useEffect(()=>{
@@ -115,24 +117,21 @@ export default function ChatPage() {
     }
   },[query])
 
-const handleChatsLoad = async (id: string)=>{
-  try {
-    const fordata = new FormData()
-    fordata.append("azenda", "fetchchats")
 
-    fetcher.submit(fordata, {
-      method: "POST",
-      action: `/backendchatsload?id=${id}`,
-    });
+  useEffect(() => {
+    if (!selectedChat) return;
+
+    const interval = setInterval(() => {
+      const formData = new FormData();
+      formData.append("azenda", "fetchchats");
+      fetcher.submit(formData, {
+        method: "POST",
+        action: `/backendchatsload?id=${selectedChat}`,
+      });
+    }, 3000); // every 3 seconds
     
-  } catch (error) {
-    console.log((error as Error).message)
-  }
-}
-  useEffect(()=>{
-    handleChatsLoad(selectedChat as string)
-  },[selectedChat])
-  
+    return () => clearInterval(interval);
+  }, [selectedChat]);
 
    const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -220,7 +219,7 @@ const handleChatsLoad = async (id: string)=>{
                   {/* Name and Message */}
                   <div className="min-w-0">
                     <h3 className="font-medium text-gray-900 truncate">
-                      {chat.fullname}
+                      {chat.username}
                     </h3>
                     <p className="text-sm text-gray-600 truncate">
                       {chat.lastMessage || "Start Chatting!"}
@@ -298,7 +297,7 @@ const handleChatsLoad = async (id: string)=>{
                   }`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow-lg ${
                       msg.sender === loaderData?.user?._id
                         ? "bg-blue-600 text-white"
                         : "bg-gray-100 text-gray-900"
@@ -334,6 +333,8 @@ const handleChatsLoad = async (id: string)=>{
                   type="text"
                   name="message"
                   placeholder="Type a message..."
+                  value={message}
+                  onChange={(e)=> setMessage(e.target.value)}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
                 <button
@@ -341,7 +342,7 @@ const handleChatsLoad = async (id: string)=>{
                   disabled={isSending}
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  {isSending ? "Sending..." : "Send"}
+                 Send
                 </button>
               </fetcher.Form>
             </div>
