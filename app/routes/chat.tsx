@@ -250,7 +250,7 @@ const users = (fetcher.data?.users ) || [];
               <div className="flex items-center">
                 <button
                   onClick={() => setShowSidebar(true)}
-                  className="md:hidden mr-3 text-gray-600"
+                  className="md:hidden mr-3 text-gray-600 "
                 >
                   <svg
                     className="w-6 h-6"
