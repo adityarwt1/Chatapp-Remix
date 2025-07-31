@@ -68,8 +68,7 @@ export const loader: LoaderFunction = async ({
         {participant2 : userA}
       ]
      })
-    console.log("chats found on database", chat )
-
+    
     let chats =[]
     if(chat.length >0){
       for(let i = 0; i < chat.length; i++){
@@ -90,12 +89,17 @@ export const loader: LoaderFunction = async ({
         }
       }
     }
-    
+    console.log("this lenght data found on the chats", chats.length)
 
     /// getting the message+
 
     await connect()
-    const message = await Message.find({})
+    const messages = []
+    for(let i = 0 ; i < chats.length; i++){
+      const message = await Message.find({_id: chats[i]._id})
+      messages.push("this is the message on the ",message)
+    }
+    console.log(messages)
     return json({ message: "Chat Page", user ,chats }, { status: 200 });
   } catch (error) {
     console.log((error as Error).message);
@@ -108,11 +112,11 @@ export const loader: LoaderFunction = async ({
 
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState<number | null>(1);
-  const [message, setMessage] = useState("");
   const [showSidebar, setShowSidebar] = useState(false);
   const loaderData = useLoaderData<FetchType>();
   const [query, setQuery] = useState("")
   const fetcher = useFetcher<FetchType>();
+  const isSending = fetcher.state ==="submitting"
 const users = (fetcher.data?.users ) || [];
 
 
@@ -129,71 +133,7 @@ const users = (fetcher.data?.users ) || [];
   },[query])
 
 
-  const chats: Chat[] = [
-    {
-      id: 1,
-      name: "John Doe",
-      lastMessage: "Hey, how are you?",
-      timestamp: "2:30 PM",
-      unread: 2,
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      lastMessage: "See you tomorrow!",
-      timestamp: "1:15 PM",
-      unread: 0,
-    },
-    {
-      id: 3,
-      name: "Team Chat",
-      lastMessage: "Meeting at 3 PM",
-      timestamp: "12:45 PM",
-      unread: 5,
-    },
-    {
-      id: 4,
-      name: "Alice Johnson",
-      lastMessage: "Thanks for your help",
-      timestamp: "11:30 AM",
-      unread: 0,
-    },
-  ];
-
-  const messages: Message[] = [
-    {
-      id: 1,
-      text: "Hey there! How are you doing?",
-      sender: "other",
-      timestamp: "2:25 PM",
-    },
-    {
-      id: 2,
-      text: "I'm doing great, thanks for asking!",
-      sender: "user",
-      timestamp: "2:26 PM",
-    },
-    {
-      id: 3,
-      text: "That's awesome to hear!",
-      sender: "other",
-      timestamp: "2:27 PM",
-    },
-    {
-      id: 4,
-      text: "How was your weekend?",
-      sender: "other",
-      timestamp: "2:30 PM",
-    },
-  ];
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (message.trim()) {
-      setMessage("");
-    }
-  };
-
+  
   return (
     <div className="h-screen flex">
       {/* Sidebar (30%) */}
@@ -365,11 +305,10 @@ const users = (fetcher.data?.users ) || [];
 
             {/* Message Input */}
             <div className="p-4 border-t border-gray-200 bg-white">
-              <form onSubmit={handleSendMessage} className="flex space-x-2">
+              <fetcher.Form  className="flex space-x-2">
                 <input
                   type="text"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  name="message"
                   placeholder="Type a message..."
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
@@ -377,9 +316,9 @@ const users = (fetcher.data?.users ) || [];
                   type="submit"
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  Send
+                  {isSending ?"Sending...": "Send"}
                 </button>
-              </form>
+              </fetcher.Form>
             </div>
           </>
         ) : (
@@ -396,3 +335,65 @@ const users = (fetcher.data?.users ) || [];
     </div>
   );
 }
+
+
+
+  const chats: Chat[] = [
+    {
+      id: 1,
+      name: "John Doe",
+      lastMessage: "Hey, how are you?",
+      timestamp: "2:30 PM",
+      unread: 2,
+    },
+    {
+      id: 2,
+      name: "Jane Smith",
+      lastMessage: "See you tomorrow!",
+      timestamp: "1:15 PM",
+      unread: 0,
+    },
+    {
+      id: 3,
+      name: "Team Chat",
+      lastMessage: "Meeting at 3 PM",
+      timestamp: "12:45 PM",
+      unread: 5,
+    },
+    {
+      id: 4,
+      name: "Alice Johnson",
+      lastMessage: "Thanks for your help",
+      timestamp: "11:30 AM",
+      unread: 0,
+    },
+  ];
+
+  const messages: Message[] = [
+    {
+      id: 1,
+      text: "Hey there! How are you doing?",
+      sender: "other",
+      timestamp: "2:25 PM",
+    },
+    {
+      id: 2,
+      text: "I'm doing great, thanks for asking!",
+      sender: "user",
+      timestamp: "2:26 PM",
+    },
+    {
+      id: 3,
+      text: "That's awesome to hear!",
+      sender: "other",
+      timestamp: "2:27 PM",
+    },
+    {
+      id: 4,
+      text: "How was your weekend?",
+      sender: "other",
+      timestamp: "2:30 PM",
+    },
+  ];
+
+  
