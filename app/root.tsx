@@ -99,7 +99,7 @@ export const meta: MetaFunction = () => {
   ];
   const title = "ChatApp - Aditya Rawat | Modern Messaging Solution";
   const description = "ChatApp by Aditya Rawat is a modern, secure messaging platform...";
-  const imageUrl = "https://chatapp-remix.vercel.app/banner.png";
+  const imageUrl = "https://img.freepik.com/premium-vector/chat-app-logo-sms-messenger-label-design-mobile-app-online-conversation-with-texting-message-ui-design-concept-vector-illustration_172533-1513.jpg"
   const siteUrl = "https://chatapp-remix.vercel.app/";
 
 
