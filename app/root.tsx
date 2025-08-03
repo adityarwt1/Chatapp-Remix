@@ -58,6 +58,11 @@ nProgress.done()
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          property="og:image"
+          content="https://img.freepik.com/premium-vector/chat-app-logo-sms-messenger-label-design-mobile-app-online-conversation-with-texting-message-ui-design-concept-vector-illustration_172533-1513.jpg"
+        ></meta>
+
         <Meta />
         <Links />
       </head>
@@ -114,7 +119,6 @@ export const meta: MetaFunction = () => {
     { property: "og:url", content: siteUrl },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
-    { property: "og:image", content: imageUrl },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
     { property: "og:site_name", content: "ChatApp" },
