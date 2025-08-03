@@ -27,7 +27,7 @@ export const action: ActionFunction =async({request}:ActionFunctionArgs)=>{
           const messages = await Message.find({ chatid: chatid });
           console.log("this message", messages);
         
-        return json({ message: "message sen succeesufully", messages });
+        return json({ message: "message sen succeesufully", messages , sent: true });
     } catch (error) {
         console.log((error as Error).message)
         return json({error: "Internal server issue"},{status: 500})

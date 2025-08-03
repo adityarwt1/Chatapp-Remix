@@ -49,6 +49,7 @@ interface FetchType {
   users: UserType;
   messages: Message[];
   chats: ChatsType[]
+  sent: boolean
 }
 
 
@@ -153,6 +154,12 @@ export default function ChatPage() {
          chatContainerRef.current.scrollHeight;
      }
    }, [fetcher.data?.messages]);
+
+   useEffect(()=>{
+    if(fetcher.data?.sent ){
+      setMessage("")
+    }
+   },[fetcher.data])
   return (
     <div className="h-screen flex">
       {/* Sidebar (30%) */}
@@ -345,7 +352,7 @@ export default function ChatPage() {
                   type="text"
                   name="message"
                   placeholder="Type a message..."
-                  value={message}
+                  value={fetcher.data?.sent ? "": message}
                   onChange={(e)=> setMessage(e.target.value)}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
