@@ -109,7 +109,10 @@ export const meta: MetaFunction = () => {
 
     // Open Graph / Facebook
     { property: "og:type", content: "website" },
-    { property: "og:url", content: "https://yourappdomain.com" },
+    {
+      property: "og:url",
+      content: "https://chatapp-remix.vercel.app/",
+    },
     {
       property: "og:title",
       content: "ChatApp - Aditya Rawat | Modern Messaging Solution",
@@ -119,11 +122,14 @@ export const meta: MetaFunction = () => {
       content:
         "Secure, real-time chat application with modern features like group messaging, file sharing, and cross-platform support. Developed by Aditya Rawat using cutting-edge web technologies.",
     },
-    { property: "og:image", content: "/banner.png" },
+    {
+      property: "og:image",
+      content: "https://chatapp-remix.vercel.app/banner.png",
+    },
 
     // Twitter Card
     { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:creator", content: "@YourTwitterHandle" },
+    { name: "twitter:creator", content: "@aditya_rwt01" },
     {
       name: "twitter:title",
       content: "ChatApp - Aditya Rawat | Modern Messaging Solution",
@@ -133,7 +139,10 @@ export const meta: MetaFunction = () => {
       content:
         "Real-time chat application featuring secure messaging, group chats, and modern UI. Built with React and Remix by Aditya Rawat.",
     },
-    { name: "twitter:image", content: "/banner.png" },
+    {
+      name: "twitter:image",
+      content: "https://chatapp-remix.vercel.app/banner.png",
+    },
 
     // Additional SEO tags
     { name: "viewport", content: "width=device-width, initial-scale=1" },
