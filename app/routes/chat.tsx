@@ -113,7 +113,9 @@ export default function ChatPage() {
   const [query, setQuery] = useState("")
   const fetcher = useFetcher<FetchType>();
   const isSending = fetcher.state ==="submitting"
-  const users = (fetcher.data?.users ) || [];
+  const rawaUser = fetcher.data?.users
+  const safeUser : UserType[] = Array.isArray(fetcher.data?.users) ? rawaUser: []
+
   const [selectedChat, setSelectedChat] = useState<string >(loaderData?.chats?.at(0)?._id || "");
   const [message, setMessage] = useState<string>("")
 
@@ -160,6 +162,24 @@ export default function ChatPage() {
       setMessage("")
     }
    },[fetcher.data])
+const [showPopup, setShowPopup] = useState(false);
+const popupRef = useRef<HTMLDivElement>(null);
+
+// Detect outside clicks
+useEffect(() => {
+  function handleClickOutside(event: MouseEvent) {
+    if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+      setShowPopup(false);
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+
+  
   return (
     <div className="h-screen flex">
       {/* Sidebar (30%) */}
@@ -176,10 +196,11 @@ export default function ChatPage() {
               <input
                 type="text"
                 placeholder="Search chats..."
+                onFocus={() => setShowPopup(true)}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <SearchPopup users={users} />
+              <SearchPopup users={safeUser} show={showPopup} />
             </div>
             <Link to="/profile" className="relative group">
               {loaderData.user?.image ? (
@@ -216,11 +237,11 @@ export default function ChatPage() {
               key={chat._id}
               type="button"
               onClick={() => {
-                setSelectedChat(chat?._id );
+                setSelectedChat(chat?._id);
                 setShowSidebar(false);
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 text-left w-full ${
-                selectedChat === chat?._id 
+                selectedChat === chat?._id
                   ? "bg-blue-50 border-r-2 border-blue-600"
                   : ""
               }`}
@@ -306,7 +327,7 @@ export default function ChatPage() {
               ref={chatContainerRef}
               className="flex-1 overflow-y-auto p-4 space-y-4"
             >
-              {fetcher.data?.messages ?.map((msg) => (
+              {fetcher.data?.messages?.map((msg) => (
                 <div
                   key={msg._id}
                   className={`flex ${
@@ -352,8 +373,8 @@ export default function ChatPage() {
                   type="text"
                   name="message"
                   placeholder="Type a message..."
-                  value={fetcher.data?.sent ? "": message}
-                  onChange={(e)=> setMessage(e.target.value)}
+                  value={fetcher.data?.sent ? "" : message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
                 <button
@@ -361,7 +382,7 @@ export default function ChatPage() {
                   disabled={isSending}
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                 Send
+                  Send
                 </button>
               </fetcher.Form>
             </div>

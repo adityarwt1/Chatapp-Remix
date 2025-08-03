@@ -1,49 +1,66 @@
 // app/components/SearchPopup.tsx
 import { useFetcher } from "@remix-run/react";
+import { forwardRef } from "react";
+
 interface User {
   fullname: string;
   username: string;
-  _id: string
-  image: string
-  status: string
+  _id: string;
+  image: string;
+  status: string;
 }
-interface Prop {
-  users: User[]
-}
-export default function SearchPopup({ users }: Prop) {
-  const fetcher = useFetcher();
 
-  const handleAdd = async (id: string) => {
-    try {
-      const formdata = new FormData();
-      formdata.append("id", id);
-      fetcher.submit(formdata, {
-        method: "POST",
-        action: "/backendchant",
-      });
-    } catch (error) {
-      console.log((error as Error).message);
-    }
-  };
-  return (
-    <div className="absolute z-50 bg-white border rounded-lg shadow-md mt-2 w-full max-h-64 overflow-y-auto">
-      {users.map((user) => (
-        <fetcher.Form
-          onClick={() => handleAdd(user._id)}
-          key={user._id}
-          className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
-        >
-          <img
-            src={user.image || "/logo.svg"}
-            alt={user.fullname}
-            className="w-10 h-10 rounded-full object-cover border border-gray-300 mr-3"
-          />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">{user.fullname}</span>
-            <span className="text-xs text-gray-500">{user.status}</span>
-          </div>
-        </fetcher.Form>
-      ))}
-    </div>
-  );
+interface Props {
+  users: User[];
+  show: boolean;
 }
+
+// Forward ref so parent can detect outside clicks
+const SearchPopup = forwardRef<HTMLDivElement, Props>(
+  ({ show, users }, ref) => {
+    const fetcher = useFetcher();
+
+    const handleAdd = async (id: string) => {
+      try {
+        const formdata = new FormData();
+        formdata.append("id", id);
+        fetcher.submit(formdata, {
+          method: "POST",
+          action: "/backendchant",
+        });
+      } catch (error) {
+        console.log((error as Error).message);
+      }
+    };
+
+    if (!show || users.length === 0) return null;
+
+    return (
+      <div
+        ref={ref}
+        className="absolute z-50 bg-white border rounded-lg shadow-md mt-2 w-full max-h-64 overflow-y-auto"
+      >
+        {users.map((user) => (
+          <fetcher.Form
+            onClick={() => handleAdd(user._id)}
+            key={user._id}
+            className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          >
+            <img
+              src={user.image || "/logo.svg"}
+              alt={user.fullname}
+              className="w-10 h-10 rounded-full object-cover border border-gray-300 mr-3"
+            />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{user.fullname}</span>
+              <span className="text-xs text-gray-500">{user.status}</span>
+            </div>
+          </fetcher.Form>
+        ))}
+      </div>
+    );
+  }
+);
+
+SearchPopup.displayName = "SearchPopup";
+export default SearchPopup;
