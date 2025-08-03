@@ -145,14 +145,7 @@ export default function LoginPage() {
           </button>
         </fetcher.Form>
 
-        <div className="mt-6 text-center">
-          <Link
-            to="/forgot-password"
-            className="text-blue-600 hover:underline text-sm"
-          >
-            Forgot your password?
-          </Link>
-        </div>
+       
 
         <div className="mt-8 text-center">
           <span className="text-gray-600">{"Don't have an account? "}</span>
