@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://chatapp-remix.vercel.app/sitemap.xml
