@@ -97,59 +97,43 @@ export const meta: MetaFunction = () => {
     "video chat",
     "voice messages",
   ];
+  const title = "ChatApp - Aditya Rawat | Modern Messaging Solution";
+  const description = "ChatApp by Aditya Rawat is a modern, secure messaging platform...";
+  const imageUrl = "https://chatapp-remix.vercel.app/banner.png";
+  const siteUrl = "https://chatapp-remix.vercel.app/";
+
 
   return [
-    { title: "ChatApp - Aditya Rawat | Modern Messaging Solution" },
-    {
-      name: "description",
-      content:
-        "ChatApp by Aditya Rawat is a modern, secure messaging platform featuring real-time chat, group conversations, and cross-platform compatibility. Built with React and Remix for optimal performance.",
-    },
+      
+    { title },
+    { name: "description", content: description },
     { name: "keywords", content: keywords.join(", ") },
-
-    // Open Graph / Facebook
+    
+    // Open Graph
     { property: "og:type", content: "website" },
-    {
-      property: "og:url",
-      content: "https://chatapp-remix.vercel.app/",
-    },
-    {
-      property: "og:title",
-      content: "ChatApp - Aditya Rawat | Modern Messaging Solution",
-    },
-    {
-      property: "og:description",
-      content:
-        "Secure, real-time chat application with modern features like group messaging, file sharing, and cross-platform support. Developed by Aditya Rawat using cutting-edge web technologies.",
-    },
-    {
-      property: "og:image",
-      content: "https://chatapp-remix.vercel.app/banner.png",
-    },
-
-    // Twitter Card
+    { property: "og:url", content: siteUrl },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:image", content: imageUrl },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:site_name", content: "ChatApp" },
+    
+    // Twitter
     { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:site", content: "@aditya_rwt01" },
     { name: "twitter:creator", content: "@aditya_rwt01" },
-    {
-      name: "twitter:title",
-      content: "ChatApp - Aditya Rawat | Modern Messaging Solution",
-    },
-    {
-      name: "twitter:description",
-      content:
-        "Real-time chat application featuring secure messaging, group chats, and modern UI. Built with React and Remix by Aditya Rawat.",
-    },
-    {
-      name: "twitter:image",
-      content: "https://chatapp-remix.vercel.app/banner.png",
-    },
-
-    // Additional SEO tags
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: imageUrl },
+    
+    // Additional tags
     { name: "viewport", content: "width=device-width, initial-scale=1" },
     { charset: "utf-8" },
-    { name: "theme-color", content: "#4285f4" }, // Example brand color
-    { name: "robots", content: "index, follow" }, // For search engine crawling
+    { name: "theme-color", content: "#4285f4" },
+    { name: "robots", content: "index, follow" },
   ];
+
 };
 
 
