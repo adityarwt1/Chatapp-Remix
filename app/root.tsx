@@ -8,7 +8,7 @@ import {
   ScrollRestoration,
   useNavigation,
 } from "@remix-run/react";
-import type { LinksFunction, LoaderFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunction, MetaFunction } from "@remix-run/node";
 
 import "./tailwind.css";
 import { getSession } from "lib/session.server";
@@ -68,6 +68,13 @@ nProgress.done()
       </body>
     </html>
   );
+}
+
+
+export const meta: MetaFunction = ()=>{
+  return [
+    {title: "ChatApp - Aditya Rawat"}
+  ]
 }
 
 export default function App() {
