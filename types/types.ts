@@ -17,3 +17,8 @@ export interface UserType {
   username:string
 }
 
+
+export interface Message{
+  _id: string,
+  
+}

@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
@@ -27,17 +26,32 @@ export interface UserType {
 }
 
 interface Message {
-  id: number;
+  _id: string;
   text: string;
   sender: "user" | "other";
   timestamp: string;
+  message: string;
+  createdAt: Date;
+  unread: number
 }
 
-
+interface ChatsType {
+  _id: string;
+  fullname: string;
+  username: string;
+  lastMessage: string;
+  image: string;
+  updatedAt: Date
+  unread: number
+}
 interface FetchType {
   user: UserType;
-  users: UserType
+  users: UserType;
+  messages: Message[];
+  chats: ChatsType[]
 }
+
+
 
 
 
@@ -62,19 +76,17 @@ export const loader: LoaderFunction = async ({
         {participant2 : userA}
       ]
      })
-    let chats =[]
+    const chats  =[]
     if(chat.length >0){
       for(let i = 0; i < chat.length; i++){
         const id =
           chat[i]?.participant1 !== user?._id
             ? chat[i].participant2
             : chat[i]?.participant1
-        const userdata = await User.findOne({_id: new mongoose.Types.ObjectId(id as string)})
+        const userdata = await User.findOne({_id: new mongoose.Types.ObjectId(id as string)}).select("_id username fullname lastmessage image updatedAt unread")
         chats.push(userdata)
       }
     }
-    console.log(chats)
-    console.log("this lenght data found on the chats", chats.length)
 
     /// getting the message+
 
@@ -101,7 +113,7 @@ export default function ChatPage() {
   const fetcher = useFetcher<FetchType>();
   const isSending = fetcher.state ==="submitting"
   const users = (fetcher.data?.users ) || [];
-  const [selectedChat, setSelectedChat] = useState<number | null>(loaderData?.chats?.at(0)?._id);
+  const [selectedChat, setSelectedChat] = useState<string >(loaderData?.chats?.at(0)?._id || "");
   const [message, setMessage] = useState<string>("")
 
 
@@ -197,11 +209,11 @@ export default function ChatPage() {
               key={chat._id}
               type="button"
               onClick={() => {
-                setSelectedChat(chat?._id);
+                setSelectedChat(chat?._id );
                 setShowSidebar(false);
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 text-left w-full ${
-                selectedChat === chat?._id
+                selectedChat === chat?._id 
                   ? "bg-blue-50 border-r-2 border-blue-600"
                   : ""
               }`}
@@ -287,7 +299,7 @@ export default function ChatPage() {
               ref={chatContainerRef}
               className="flex-1 overflow-y-auto p-4 space-y-4"
             >
-              {fetcher.data?.messages?.map((msg) => (
+              {fetcher.data?.messages ?.map((msg) => (
                 <div
                   key={msg._id}
                   className={`flex ${

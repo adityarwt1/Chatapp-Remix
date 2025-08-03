@@ -1,34 +1,35 @@
 // app/components/SearchPopup.tsx
 import { useFetcher } from "@remix-run/react";
-interface Logs {
+interface User {
   fullname: string;
   username: string;
   _id: string
   image: string
   status: string
 }
-interface UserType{
- users: Logs[]
+interface Prop {
+  users: User[]
 }
-export default function SearchPopup({ users }: UserType) {
-  const fetcher = useFetcher()
+export default function SearchPopup({ users }: Prop) {
+  const fetcher = useFetcher();
 
-  const handleAdd = async (id: string)=>{
+  const handleAdd = async (id: string) => {
     try {
-      const formdata  = new FormData()
-      formdata.append("id", id)
-      fetcher.submit(formdata,{
+      const formdata = new FormData();
+      formdata.append("id", id);
+      fetcher.submit(formdata, {
         method: "POST",
-        action: "/backendchant"
-      })
+        action: "/backendchant",
+      });
     } catch (error) {
-      console.log((error as Error).message)
+      console.log((error as Error).message);
     }
-  }
+  };
   return (
     <div className="absolute z-50 bg-white border rounded-lg shadow-md mt-2 w-full max-h-64 overflow-y-auto">
-      {users.map((user : Logs) => (
-        <fetcher.Form onClick={()=> handleAdd(user._id)}
+      {users.map((user) => (
+        <fetcher.Form
+          onClick={() => handleAdd(user._id)}
           key={user._id}
           className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
         >
