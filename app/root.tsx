@@ -82,6 +82,7 @@ nProgress.done()
 
 export const meta: MetaFunction = () => {
   const keywords = [
+    "chatappadityarawat",
     "ChatApp",
     "messaging",
     "real-time chat",
